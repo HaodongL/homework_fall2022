@@ -10,6 +10,7 @@ import gym
 from cs285.policies.sac_policy import MLPPolicySAC
 from cs285.critics.sac_critic import SACCritic
 import cs285.infrastructure.pytorch_util as ptu
+from cs285.infrastructure import sac_utils
 
 class SACAgent(BaseAgent):
     def __init__(self, env: gym.Env, agent_params):
@@ -51,6 +52,28 @@ class SACAgent(BaseAgent):
         # HINT: You need to use the entropy term (alpha)
         # 2. Get current Q estimates and calculate critic loss
         # 3. Optimize the critic  
+        ob_no = ptu.from_numpy(ob_no)
+        next_ob_no = ptu.from_numpy(next_ob_no)
+        ac_na = ptu.from_numpy(ac_na)
+
+        two_q = self.critic_target(next_ob_no, ac_na)
+        alpha =  self.actor.alpha()
+
+        pi = self.actor(next_ob_no)
+        action =  ptu.to_numpy(pi.sample())
+        log_prob = pi.log_prob(action)
+
+        y = re_n + self.gamma * (1 - terminal_n) * (torch.min(two_q, axis = 1) - alpha * log_prob)
+
+        y_hat = torch.min(self.critic(ob_no, ac_na), axis = 1)
+
+        loss = self.critic.loss(y_hat, y)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
+        critic_loss = ptu.to_numpy(loss)
+
         return critic_loss
 
     def train(self, ob_no, ac_na, re_n, next_ob_no, terminal_n):
@@ -67,11 +90,34 @@ class SACAgent(BaseAgent):
         #     update the actor
 
         # 4. gather losses for logging
+        n_c = agent_params['num_critic_updates_per_agent_update']
+        n_a = agent_params['num_actor_updates_per_agent_update']
+
+        targ_freq = self.critic_target_update_frequency
+
+        loss_c = []
+        loss_ac = []
+        loss_al = []
+        tem = []
+
+        for i in range(len(n_c)):
+            critic_loss = self.update_critic(ob_no, ac_na, next_ob_no, re_n, terminal_n)
+            loss_c.append(critic_loss)
+            if i % targ_freq == 0:
+                soft_update_params(self.critic, self.critic_target, self.critic_tau)
+
+        for j in range(len(n_a)):
+            actor_loss, alpha_loss, _ = self.actor.update(ob_no, self.critic)
+            loss_ac.append(actor_loss)
+            loss_al.append(alpha_loss)
+            tem.append(np.exp(self.actor.log_alpha))
+
+
         loss = OrderedDict()
-        loss['Critic_Loss'] = TODO
-        loss['Actor_Loss'] = TODO
-        loss['Alpha_Loss'] = TODO
-        loss['Temperature'] = TODO
+        loss['Critic_Loss'] = loss_c
+        loss['Actor_Loss'] = loss_ac
+        loss['Alpha_Loss'] = loss_al
+        loss['Temperature'] = tem
 
         return loss
 
