@@ -51,6 +51,7 @@ class DQNAgent(object):
 
         eps = self.exploration.value(self.t)
 
+
         # TODO use epsilon greedy exploration when selecting action
         perform_random_action = False
         if np.random.binomial(n=1, p=eps) == 1 or self.t < self.learning_starts:
@@ -61,13 +62,19 @@ class DQNAgent(object):
                 # with probability eps (see np.random.random())
                 # OR if your current step number (see self.t) is less that self.learning_starts
             action = self.env.action_space.sample()
+            # print("self.last_obs", self.last_obs,shape)
         else:
             # HINT: Your actor will take in multiple previous observations ("frames") in order
                 # to deal with the partial observability of the environment. Get the most recent 
                 # `frame_history_len` observations using functionality from the replay buffer,
                 # and then use those observations as input to your actor. 
+
             hist_obs = self.replay_buffer.encode_recent_observation()
             action = self.actor.get_action(hist_obs)
+            # for obs_i in hist_obs:
+            #     action = self.actor.get_action(obs_i)
+
+            
         
         # TODO take a step in the environment using the action from the policy
         # HINT1: remember that self.last_obs must always point to the newest/latest observation
