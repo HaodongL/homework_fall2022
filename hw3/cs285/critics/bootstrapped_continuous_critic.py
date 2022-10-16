@@ -92,17 +92,18 @@ class BootstrappedContinuousCritic(nn.Module, BaseCritic):
         ob_no = ptu.from_numpy(ob_no)
         next_ob_no = ptu.from_numpy(next_ob_no)
         
-        y_hat = self(ob_no).squeeze(1)
+        # y_hat = self(ob_no).squeeze(1)
 
         v_s_next = self(next_ob_no).squeeze(1)
-        v_s_next[terminal_n == 1] = 0
-        y = reward_n + self.gamma * v_s_next
+        # v_s_next[terminal_n == 1] = 0
+        y = reward_n + self.gamma * v_s_next * (1 - terminal_n)
 
         for i in range(len(n_total)):
+            y_hat = self(ob_no).squeeze(1)
             if i % n_grad_per_t == 0:
                 v_s_next = self(next_ob_no).squeeze(1)
-                v_s_next[terminal_n == 1] = 0
-                y = reward_n + self.gamma * v_s_next
+                # v_s_next[terminal_n == 1] = 0
+                y = reward_n + self.gamma * v_s_next * (1 - terminal_n)
 
             loss = self.loss(y_hat, y)
             self.optimizer.zero_grad()

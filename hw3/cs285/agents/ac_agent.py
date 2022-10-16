@@ -43,14 +43,14 @@ class ACAgent(BaseAgent):
         loss_a = []
 
         for i in range(len(agent_params['num_critic_updates_per_agent_update'])):
-            loss_c_i = self.critic.update(ob_no, ac_na, next_ob_no, re_n, terminal_n)
-            loss_c.append(loss_c_i)
+            loss_c = self.critic.update(ob_no, ac_na, next_ob_no, re_n, terminal_n)
+            # loss_c.append(loss_c_i)
 
         advantage = self.estimate_advantage(ob_no, next_ob_no, re_n, terminal_n)
 
         for j in range(len(agent_params['num_actor_updates_per_agent_update'])):
-            loss_a_j = self.actor.update(ob_no, ac_na, advantage)
-            loss_a.append(loss_a_j)
+            loss_a = self.actor.update(ob_no, ac_na, advantage)
+            # loss_a.append(loss_a_j)
 
         loss = OrderedDict()
         loss['Critic_Loss'] = loss_c
@@ -68,8 +68,8 @@ class ACAgent(BaseAgent):
 
         v_s = self.critic.forward_np(ob_no)
         v_s_next = self.critic.forward_np(next_ob_no)
-        v_s_next[terminal_n == 1] = 0
-        q_sa = re_n + self.gamma * v_s_next
+        # v_s_next[terminal_n == 1] = 0
+        q_sa = re_n + self.gamma * v_s_next * (1 - terminal_n)
 
         adv_n = q_sa - v_s
 
