@@ -90,20 +90,24 @@ class BootstrappedContinuousCritic(nn.Module, BaseCritic):
         n_total = n_t * n_grad_per_t
 
         ob_no = ptu.from_numpy(ob_no)
+        # ac_na = ptu.from_numpy(ac_na).to(torch.long)
         next_ob_no = ptu.from_numpy(next_ob_no)
+        reward_n = ptu.from_numpy(reward_n)
+        terminal_n = ptu.from_numpy(terminal_n)
         
-        # y_hat = self(ob_no).squeeze(1)
+        # y_hat = self(ob_no).squeeze()
 
-        v_s_next = self(next_ob_no).squeeze(1)
+        v_s_next = self(next_ob_no).squeeze()
         # v_s_next[terminal_n == 1] = 0
         y = reward_n + self.gamma * v_s_next * (1 - terminal_n)
 
-        for i in range(len(n_total)):
-            y_hat = self(ob_no).squeeze(1)
+        for i in range(n_total):
+            y_hat = self(ob_no).squeeze()
             if i % n_grad_per_t == 0:
-                v_s_next = self(next_ob_no).squeeze(1)
+                v_s_next = self(next_ob_no).squeeze()
                 # v_s_next[terminal_n == 1] = 0
                 y = reward_n + self.gamma * v_s_next * (1 - terminal_n)
+                y = y.detach()
 
             loss = self.loss(y_hat, y)
             self.optimizer.zero_grad()

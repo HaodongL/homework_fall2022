@@ -131,6 +131,7 @@ class MLPPolicyAC(MLPPolicy):
         # TODO: update the policy and return the loss
         observations = ptu.from_numpy(observations)
         actions = ptu.from_numpy(actions)
+        adv_n = ptu.from_numpy(adv_n)
 
         mgaussian = self(observations)
         log_prob = mgaussian.log_prob(actions)

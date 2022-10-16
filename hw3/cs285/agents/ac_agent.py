@@ -42,13 +42,13 @@ class ACAgent(BaseAgent):
         loss_c = []
         loss_a = []
 
-        for i in range(len(agent_params['num_critic_updates_per_agent_update'])):
+        for i in range(self.agent_params['num_critic_updates_per_agent_update']):
             loss_c = self.critic.update(ob_no, ac_na, next_ob_no, re_n, terminal_n)
             # loss_c.append(loss_c_i)
 
         advantage = self.estimate_advantage(ob_no, next_ob_no, re_n, terminal_n)
 
-        for j in range(len(agent_params['num_actor_updates_per_agent_update'])):
+        for j in range(self.agent_params['num_actor_updates_per_agent_update']):
             loss_a = self.actor.update(ob_no, ac_na, advantage)
             # loss_a.append(loss_a_j)
 
