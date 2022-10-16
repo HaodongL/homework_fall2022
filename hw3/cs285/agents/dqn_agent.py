@@ -52,6 +52,7 @@ class DQNAgent(object):
         eps = self.exploration.value(self.t)
 
         # TODO use epsilon greedy exploration when selecting action
+        perform_random_action = False
         if np.random.binomial(n=1, p=eps) == 1 or self.t < self.learning_starts:
             perform_random_action = True
 
