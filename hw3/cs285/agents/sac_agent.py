@@ -62,16 +62,20 @@ class SACAgent(BaseAgent):
         # two_q = self.critic_target(next_ob_no, ac_na)
         # q = torch.min(two_q, dim = -1).values
         # print("two_q", two_q[0:10,:])
-        q1, q2 = self.critic_target(next_ob_no, ac_na)
-        q = torch.min(q1, q2)
-        alpha =  torch.exp(self.actor.log_alpha)
 
 
+        alpha =  self.actor.alpha
         pi = self.actor(next_ob_no)
-        action =  pi.sample()
+        action =  pi.rsample()
+        log_prob = pi.log_prob(action).sum(dim = -1)
+
+        q1, q2 = self.critic_target(next_ob_no, action)
+        q = torch.min(q1, q2)
+        
+        
         # action, pi = self.actor.get_action(ptu.to_numpy(next_ob_no))
         # action = ptu.from_numpy(action)
-        log_prob = pi.log_prob(action).sum(dim = -1)
+        
         # log_prob = log_prob.detach()
 
         # print("action", action.shape)
@@ -143,12 +147,13 @@ class SACAgent(BaseAgent):
             # loss_al.append(alpha_loss)
             # tem.append(torch.exp(self.actor.log_alpha))
 
-
         loss = OrderedDict()
         loss['Critic_Loss'] = loss_c
         loss['Actor_Loss'] = loss_ac
         loss['Alpha_Loss'] = loss_al
         loss['Temperature'] = tem
+
+        self.training_step += 1
 
         return loss
 

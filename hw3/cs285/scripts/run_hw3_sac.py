@@ -20,8 +20,8 @@ class SAC_Trainer(object):
             'init_temperature': params['init_temperature'],
             'actor_update_frequency': params['actor_update_frequency'],
             'critic_target_update_frequency': params['critic_target_update_frequency'],
-            'num_target_updates': params['num_target_updates'],
-            'num_grad_steps_per_target_update': params['num_grad_steps_per_target_update'],
+            # 'num_target_updates': params['num_target_updates'],
+            # 'num_grad_steps_per_target_update': params['num_grad_steps_per_target_update'],
             }
 
         estimate_advantage_args = {
@@ -67,13 +67,13 @@ def main():
     parser.add_argument('--num_agent_train_steps_per_iter', type=int, default=1)
     parser.add_argument('--num_critic_updates_per_agent_update', type=int, default=1)
     parser.add_argument('--num_actor_updates_per_agent_update', type=int, default=1)
-    parser.add_argument('--actor_update_frequency', type=int, default=10)
+    parser.add_argument('--actor_update_frequency', type=int, default=1)
     parser.add_argument('--critic_target_update_frequency', type=int, default=1)
     parser.add_argument('--batch_size', '-b', type=int, default=1000) #steps collected per train iteration
     parser.add_argument('--eval_batch_size', '-eb', type=int, default=400) #steps collected per eval iteration
     parser.add_argument('--train_batch_size', '-tb', type=int, default=256) ##steps used per gradient step
-    parser.add_argument('--num_target_updates', '-ntu', type=int, default=10)
-    parser.add_argument('--num_grad_steps_per_target_update', '-ngsptu', type=int, default=10)
+    # parser.add_argument('--num_target_updates', '-ntu', type=int, default=10)
+    # parser.add_argument('--num_grad_steps_per_target_update', '-ngsptu', type=int, default=10)
 
     parser.add_argument('--discount', type=float, default=0.99)
     parser.add_argument('--init_temperature', '-temp', type=float, default=1.0)

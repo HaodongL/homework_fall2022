@@ -36,7 +36,7 @@ class MLPPolicySAC(MLPPolicy):
     @property
     def alpha(self):
         # TODO: Formulate entropy term
-        entropy = torch.exp(self.log_apha)
+        entropy = torch.exp(self.log_alpha)
         return entropy
 
     def get_action(self, obs: np.ndarray, sample=True) -> np.ndarray:
@@ -109,8 +109,6 @@ class MLPPolicySAC(MLPPolicy):
     def update(self, obs, critic):
         # TODO Update actor network and entropy regularizer
         # return losses and alpha value
-
-
         target_entropy = self.target_entropy
 
         obs = ptu.from_numpy(obs)
@@ -126,12 +124,13 @@ class MLPPolicySAC(MLPPolicy):
         q1, q2 = critic(obs, action)
         q = torch.min(q1, q2)
 
-        alpha = torch.exp(self.log_alpha)
+        # alpha = torch.exp(self.log_alpha)
+        alpha = self.alpha
         alpha = alpha.detach()
 
         # check dim
         cd1 = log_prob.shape == q.shape
-        assert(cd1, "dim mismatch")
+        assert cd1, "dim mismatch"
 
 
         loss_ac = torch.mean(alpha * log_prob - q)
@@ -140,9 +139,10 @@ class MLPPolicySAC(MLPPolicy):
         self.optimizer.step()
 
 
-        alpha = torch.exp(self.log_alpha)
+        # alpha = torch.exp(self.log_alpha)
+        alpha = self.alpha
+        # log_prob = pi.log_prob(action).sum(dim = -1)
         log_prob = log_prob.detach()
-        # q = q.detach()
 
         loss_al = torch.mean(- alpha * log_prob - alpha * target_entropy)
         self.log_alpha_optimizer.zero_grad()
@@ -152,4 +152,4 @@ class MLPPolicySAC(MLPPolicy):
         actor_loss = ptu.to_numpy(loss_ac)
         alpha_loss = ptu.to_numpy(loss_al)
 
-        return actor_loss, alpha_loss, alpha
+        return actor_loss, alpha_loss, self.alpha
