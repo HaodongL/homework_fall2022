@@ -56,11 +56,17 @@ class SACCritic(nn.Module, BaseCritic):
 
     def forward(self, obs: torch.Tensor, action: torch.Tensor):
         # TODO: return the two q values
-        q1 = self.Q1(torch.hstack((obs, action))).unsqueeze(dim = 1)
-        q2 = self.Q2(torch.hstack((obs, action))).unsqueeze(dim = 1)
+        # print("ac_dim", self.ac_dim)
+        # print("action",action.shape)
+        # print("ob_dim",self.ob_dim)
+        # print("obs",obs.shape)
 
-        values = torch.hstack((q1, q2))
-        return values
+        # q1 = self.Q1(torch.hstack((obs, action))).unsqueeze(dim = 1)
+        # q2 = self.Q2(torch.hstack((obs, action))).unsqueeze(dim = 1)
+        # values = torch.hstack((q1, q2)).squeeze()
+        q1 = self.Q1(torch.hstack((obs, action))).squeeze()
+        q2 = self.Q2(torch.hstack((obs, action))).squeeze()
+        return q1, q2
 
 
 
