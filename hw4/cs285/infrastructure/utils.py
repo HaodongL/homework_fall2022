@@ -55,23 +55,16 @@ def mean_squared_error(a, b):
 ############################################
 
 def sample_trajectory(env, policy, max_path_length, render=False):
-    # TODO: get this from previous HW
     ob = env.reset()
     obs, acs, rewards, next_obs, terminals, image_obs = [], [], [], [], [], []
     steps = 0
     while True:
+        # render image of the simulated env
         if render:
-            if 'rgb_array' in render_mode:
-                if hasattr(env, 'sim'):
-                    if 'track' in env.env.model.camera_names:
-                        image_obs.append(env.sim.render(camera_name='track', height=500, width=500)[::-1])
-                    else:
-                        image_obs.append(env.sim.render(height=500, width=500)[::-1])
-                else:
-                    image_obs.append(env.render(mode=render_mode))
-            if 'human' in render_mode:
-                env.render(mode=render_mode)
-                time.sleep(env.model.opt.timestep)
+            if hasattr(env, 'sim'):
+                image_obs.append(env.sim.render(camera_name='track', height=500, width=500)[::-1])
+            else:
+                image_obs.append(env.render())
         obs.append(ob)
         ac = policy.get_action(ob)
         ac = ac[0]
@@ -88,38 +81,34 @@ def sample_trajectory(env, policy, max_path_length, render=False):
             break
         else:
             terminals.append(0)
-
     return Path(obs, image_obs, acs, rewards, next_obs, terminals)
 
+
 def sample_trajectories(env, policy, min_timesteps_per_batch, max_path_length, render=False):
-    """
-        Collect rollouts using policy
-        until we have collected min_timesteps_per_batch steps
-    """
-    # TODO: get this from previous HW
+
     timesteps_this_batch = 0
     paths = []
     while timesteps_this_batch < min_timesteps_per_batch:
 
         #collect rollout
-        path = sample_trajectory(env, policy, max_path_length, render, render_mode)
+        path = sample_trajectory(env, policy, max_path_length, render)
         paths.append(path)
 
         #count steps
         timesteps_this_batch += get_pathlength(path)
         print('At timestep:    ', timesteps_this_batch, '/', min_timesteps_per_batch, end='\r')
+
     return paths, timesteps_this_batch
 
+
 def sample_n_trajectories(env, policy, ntraj, max_path_length, render=False):
-    """
-        Collect ntraj rollouts using policy
-    """
-    # TODO: get this from Piazza
+
     paths = []
     for i in range(ntraj):
         # collect rollout
-        path = sample_trajectory(env, policy, max_path_length, render, render_mode)
+        path = sample_trajectory(env, policy, max_path_length, render)
         paths.append(path)
+
     return paths
 
 ############################################
