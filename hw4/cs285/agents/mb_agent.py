@@ -55,7 +55,7 @@ class MBAgent(BaseAgent):
             b = (i+1)*num_data_per_ens
             observations = ob_no[a:b] # TODO(Q1)
             actions = ac_na[a:b] # TODO(Q1)
-            next_observations = ob_no[a:b] # TODO(Q1)
+            next_observations = next_ob_no[a:b] # TODO(Q1)
 
             # use datapoints to update one of the dyn_models
             model = self.dyn_models[i] # TODO(Q1)

@@ -134,13 +134,19 @@ class MPCPolicy(BasePolicy):
         #
         # Then, return the mean predictions across all ensembles.
         # Hint: the return value should be an array of shape (N,)
+
+        # print("obs: ", obs.shape)
+        # print("acs: ", candidate_action_sequences.shape)
         res = []
         for model in self.dyn_models:
             res_one = self.calculate_sum_of_rewards(obs, candidate_action_sequences, model)
             res.append(res_one)
 
-        res_np = np.array(res)
-        res_mean = np.mean(res_np, axis = 0)
+        res_mean = np.mean(res, axis = 0)
+
+        N = candidate_action_sequences.shape[0]
+        assert res_mean.shape == (N, )
+        # print("res_np: ", res_np,shape)
         return res_mean
 
     def get_action(self, obs):
@@ -178,15 +184,45 @@ class MPCPolicy(BasePolicy):
         """
 
         N = candidate_action_sequences.shape[0]
-        sum_of_rewards = []
+        H = candidate_action_sequences.shape[1]
+        D_obs = obs.shape[0]
 
-        for i in range(N):
-            acs = candidate_action_sequences[i]
-            predicted_obs = model.get_prediction(obs, acs, self.data_statistics)
-            rewards = self.env.get_reward(predicted_obs, acs)
-            sum_of_rewards.append(np.sum(rewards))
+        obs_batch = np.tile(obs, (N,1))
 
-        sum_of_rewards = np.array(sum_of_rewards)  
+        all_rewards = []
+        for i in range(H):
+            acs_batch = candidate_action_sequences[:, i, :]
+            # if i == 0:
+            #     print("acs_aaa", acs.shape)
+            #     print("obs_aaa", obs_batch.shape)
+            #     print("obs_aaa", obs_batch,shape)
+            obs_batch = model.get_prediction(obs_batch, acs_batch, self.data_statistics)
+            rewards, _ = self.env.get_reward(obs_batch, acs_batch)
+            # if i == 0:
+            #     print("rewards_aaa", rewards.shape)
+            all_rewards.append(rewards)
+        sum_of_rewards = np.sum(all_rewards, axis = 0)
+
+        # predicted_obs = []
+        # for i in range(H):
+        #     acs = candidate_action_sequences[:, i, :]
+        #     obs_batch = model.get_prediction(obs_batch, acs, self.data_statistics)
+        #     predicted_obs.append(obs_batch)
+        # predicted_obs = np.array(predicted_obs)
+
+        # sum_of_rewards = []
+        # for j in range(N):
+        #     acs = candidate_action_sequences[j, :, :]
+        #     # print(predicted_obs.shape)
+        #     obs_batch = predicted_obs[:, j, :]
+        #     rewards, _ = self.env.get_reward(obs_batch, acs)
+        #     sum_of_rewards.append(np.sum(rewards))
+        # sum_of_rewards = np.array(sum_of_rewards)  
+
+        # print("sum_of_rewards_after", sum_of_rewards.shape)
+        # print("sum_of_rewards_after", sum_of_rewards,shape)
+
+        
         # TODO (Q2)
         # For each candidate action sequence, predict a sequence of
         # states for each dynamics model in your ensemble.
