@@ -114,20 +114,20 @@ class FFModel(nn.Module, BaseModel):
         # outputs.
         observations = ptu.from_numpy(obs)
         actions = ptu.from_numpy(acs)
-        obs_mean = data_statistics['obs_mean']
-        obs_std = data_statistics['obs_std']
-        acs_mean = data_statistics['acs_mean']
-        acs_std = data_statistics['acs_std']
-        delta_mean = data_statistics['delta_mean']
-        delta_std = data_statistics['delta_std']
+        obs_mean = ptu.from_numpy(data_statistics['obs_mean'])
+        obs_std = ptu.from_numpy(data_statistics['obs_std'])
+        acs_mean = ptu.from_numpy(data_statistics['acs_mean'])
+        acs_std = ptu.from_numpy(data_statistics['acs_std'])
+        delta_mean = ptu.from_numpy(data_statistics['delta_mean'])
+        delta_std = ptu.from_numpy(data_statistics['delta_std'])
 
-        (obs_mean, obs_std, acs_mean, 
-        acs_std, delta_mean, delta_std) = self.update_statistics(obs_mean, 
-                                                                 obs_std, 
-                                                                 acs_mean, 
-                                                                 acs_std, 
-                                                                 delta_mean, 
-                                                                 delta_std)
+        # (obs_mean, obs_std, acs_mean, 
+        # acs_std, delta_mean, delta_std) = self.update_statistics(obs_mean, 
+        #                                                          obs_std, 
+        #                                                          acs_mean, 
+        #                                                          acs_std, 
+        #                                                          delta_mean, 
+        #                                                          delta_std)
         prediction, _ = self(observations,
                              actions,
                              obs_mean,
@@ -162,20 +162,20 @@ class FFModel(nn.Module, BaseModel):
         next_observations = ptu.from_numpy(next_observations)
         observations = ptu.from_numpy(observations)
         actions = ptu.from_numpy(actions)
-        obs_mean = data_statistics['obs_mean']
-        obs_std = data_statistics['obs_std']
-        acs_mean = data_statistics['acs_mean']
-        acs_std = data_statistics['acs_std']
-        delta_mean = data_statistics['delta_mean']
-        delta_std = data_statistics['delta_std']
+        obs_mean = ptu.from_numpy(data_statistics['obs_mean'])
+        obs_std = ptu.from_numpy(data_statistics['obs_std'])
+        acs_mean = ptu.from_numpy(data_statistics['acs_mean'])
+        acs_std = ptu.from_numpy(data_statistics['acs_std'])
+        delta_mean = ptu.from_numpy(data_statistics['delta_mean'])
+        delta_std = ptu.from_numpy(data_statistics['delta_std'])
 
-        (obs_mean, obs_std, acs_mean, 
-        acs_std, delta_mean, delta_std) = self.update_statistics(obs_mean, 
-                                                                 obs_std, 
-                                                                 acs_mean, 
-                                                                 acs_std, 
-                                                                 delta_mean, 
-                                                                 delta_std)
+        # (obs_mean, obs_std, acs_mean, 
+        # acs_std, delta_mean, delta_std) = self.update_statistics(obs_mean, 
+        #                                                          obs_std, 
+        #                                                          acs_mean, 
+        #                                                          acs_std, 
+        #                                                          delta_mean, 
+        #                                                          delta_std)
         delta = next_observations - observations
         target = normalize(delta, delta_mean, delta_std)
         
