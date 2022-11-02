@@ -177,7 +177,7 @@ class MPCPolicy(BasePolicy):
         The array should have shape [N].
         """
 
-        N <- self.N
+        N = candidate_action_sequences.shape[0]
         sum_of_rewards = []
 
         for i in range(N):
