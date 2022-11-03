@@ -144,8 +144,8 @@ class MPCPolicy(BasePolicy):
 
         res_mean = np.mean(res, axis = 0)
 
-        N = candidate_action_sequences.shape[0]
-        assert res_mean.shape == (N, )
+        # N = candidate_action_sequences.shape[0]
+        # assert res_mean.shape == (N, )
         # print("res_np: ", res_np,shape)
         return res_mean
 
@@ -185,7 +185,7 @@ class MPCPolicy(BasePolicy):
 
         N = candidate_action_sequences.shape[0]
         H = candidate_action_sequences.shape[1]
-        D_obs = obs.shape[0]
+        # D_obs = obs.shape[0]
 
         obs_batch = np.tile(obs, (N,1))
 
@@ -196,8 +196,9 @@ class MPCPolicy(BasePolicy):
             #     print("acs_aaa", acs.shape)
             #     print("obs_aaa", obs_batch.shape)
             #     print("obs_aaa", obs_batch,shape)
-            obs_batch = model.get_prediction(obs_batch, acs_batch, self.data_statistics)
             rewards, _ = self.env.get_reward(obs_batch, acs_batch)
+            if i < H-1:
+                obs_batch = model.get_prediction(obs_batch, acs_batch, self.data_statistics)
             # if i == 0:
             #     print("rewards_aaa", rewards.shape)
             all_rewards.append(rewards)

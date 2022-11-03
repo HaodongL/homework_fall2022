@@ -42,7 +42,7 @@ class SACAgent(BaseAgent):
         self.training_step = 0
         self.replay_buffer = ReplayBuffer(max_size=100000)
 
-    def update_critic(self):
+    def update_critic(self, ob_no, ac_na, next_ob_no, re_n, terminal_n):
         ob_no = ptu.from_numpy(ob_no)
         ac_na = ptu.from_numpy(ac_na)
         next_ob_no = ptu.from_numpy(next_ob_no)
