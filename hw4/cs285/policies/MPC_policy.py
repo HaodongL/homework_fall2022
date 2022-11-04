@@ -79,6 +79,8 @@ class MPCPolicy(BasePolicy):
                 #      our candidate sequences in order to rank them?)
                 # - Update the elite mean and variance
                 alpha = self.cem_alpha
+                D_acs = self.ac_dim
+
                 if i == 0:
                     ra_seq = []
                     for _ in range(num_sequences):
@@ -87,39 +89,70 @@ class MPCPolicy(BasePolicy):
                             ac = self.ac_space.sample()
                             one_seq.append(ac)
                         ra_seq.append(one_seq)
-                    # random_action_sequences = np.clip(ra_seq, self.low, self.high)
+                # else:
+                #     ra_seq = []
+                #     for t in range(horizon):
+                #         # print('elites_mean.shape', elites_mean.shape)
+                #         # print('num_sequences', num_sequences)
+                #         # print('horizon', horizon)
+                #         elites_mean_t = elites_mean[t, :]
+                #         elites_var_t = elites_var[t, :]
+                #         one_seq = np.random.multivariate_normal(mean = elites_mean_t, 
+                #             cov = np.diag(elites_var_t), size = num_sequences)
+                #         ra_seq.append(one_seq)
+                #     ra_seq = np.array(ra_seq).reshape((num_sequences, horizon, D_acs))
 
-                    # res_mean = self.evaluate_candidate_sequences(random_action_sequences, obs)
-                    # J = self.cem_num_elites
-                    # idx = np.argpartition(res_mean, -J)[-J:]
-                    # elites = random_action_sequences[idx]
-                    # mean_A = np.mean(elites, axis = -1)
-                    # var_A = np.diag(np.var(elites, axis = -1))
+                # random_action_sequences = np.clip(ra_seq, self.low, self.high)
+                # D_acs = random_action_sequences.shape[2]
+                # # print('random_action_sequences.shape', random_action_sequences.shape)
 
-                    # elites_mean = mean_A 
-                    # elites_var = var_A 
+                # res_mean = self.evaluate_candidate_sequences(random_action_sequences, obs)
+                # J = self.cem_num_elites
+                # idx = np.argpartition(res_mean, -J)[-J:]
+                # # idx = idx[np.argsort(res_mean[idx])]
+                # elites = random_action_sequences[idx]
+                # mean_A = np.mean(elites, axis = 0)
+                # var_A = np.var(elites, axis = 0)
+
+                # if i == 0:
+                #     elites_mean = mean_A 
+                #     elites_var = var_A 
+                # else:
+                #     elites_mean = alpha * mean_A + (1-alpha) * elites_mean
+                #     elites_var = alpha * var_A + (1-alpha) * elites_var
                 else:
-                    ra_seq = []
-                    for _ in range(num_sequences):
-                        one_seq = np.random.multivariate_normal(elites_mean, elites_var)
-                        ra_seq.append(one_seq)
+                    # ra_seq = []
+                    # for t in range(horizon):
+                    #     # print('elites_mean.shape', elites_mean.shape)
+                    #     # print('num_sequences', num_sequences)
+                    #     # print('horizon', horizon)
+                    #     elites_mean_t = elites_mean[t, :]
+                    #     elites_sd_t = elites_sd[t, :]
+                    #     one_seq = np.random.normal(elites_mean_t, elites_sd_t, num_sequences)
+                    #     ra_seq.append(one_seq)
+                    # print('elites_mean.shape', elites_mean.shape)
+                    # print('elites_sd.shape', elites_sd.shape)
+                    # ra_seq = np.array(ra_seq).reshape((num_sequences, horizon, D_acs))
+                    ra_seq = np.random.normal(elites_mean, elites_sd, (num_sequences, horizon, D_acs))
 
                 random_action_sequences = np.clip(ra_seq, self.low, self.high)
+                
+                # print('random_action_sequences.shape', random_action_sequences.shape)
 
                 res_mean = self.evaluate_candidate_sequences(random_action_sequences, obs)
                 J = self.cem_num_elites
                 idx = np.argpartition(res_mean, -J)[-J:]
-                idx = idx[np.argsort(res_mean[idx])]
+                # idx = idx[np.argsort(res_mean[idx])]
                 elites = random_action_sequences[idx]
-                mean_A = np.mean(elites, axis = -1)
-                var_A = np.diag(np.var(elites, axis = -1))
+                mean_A = np.mean(elites, axis = 0)
+                sd_A = np.std(elites, axis = 0)
 
                 if i == 0:
                     elites_mean = mean_A 
-                    elites_var = var_A 
+                    elites_sd = sd_A 
                 else:
                     elites_mean = alpha * mean_A + (1-alpha) * elites_mean
-                    elites_var = alpha * var_A + (1-alpha) * elites_var
+                    elites_sd = alpha * sd_A + (1-alpha) * elites_sd
 
             # TODO(Q5): Set `cem_action` to the appropriate action chosen by CEM
             cem_action = elites_mean

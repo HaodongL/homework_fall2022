@@ -7,6 +7,8 @@ import gym
 from cs285.policies.sac_policy import MLPPolicySAC
 from cs285.critics.sac_critic import SACCritic
 import cs285.infrastructure.pytorch_util as ptu
+import torch
+from cs285.infrastructure import sac_utils
 
 class SACAgent(BaseAgent):
     def __init__(self, env: gym.Env, agent_params):

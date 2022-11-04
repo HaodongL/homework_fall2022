@@ -24,20 +24,33 @@ class MBPOAgent(BaseAgent):
         # dynamics model. Start from a state sampled from the replay buffer.
 
         # sample 1 transition from self.mb_agent.replay_buffer
-        ob, _, _, _, terminal = self.mb_agent.replay_buffer.sample()
+        ob, _, _, _, terminal = self.mb_agent.replay_buffer.sample_random_data(batch_size = 1)
 
         obs, acs, rewards, next_obs, terminals, image_obs = [], [], [], [], [], []
         for _ in range(rollout_length):
             # get the action from the policy
             ac = self.sac_agent.actor.get_action(ob)
+            data_statistics = self.mb_agent.actor.data_statistics
+
+            # print("ac_shape", ac[None].shape)
+            # print("ac_shape", ac,shape)
             
             # determine the next observation by averaging the prediction of all the 
             # dynamics models in the ensemble
-            next_ob = self.mb_agent.actor.evaluate_candidate_sequences(ac[None], ob)
+            next_ob = []
+            for model in self.mb_agent.dyn_models:
+                next_ob_pred = model.get_prediction(ob, ac, data_statistics)
+                next_ob.append(next_ob_pred)
+            next_ob = np.mean(next_ob, axis = 0)
 
             # query the reward function to determine the reward of this transition
             # HINT: use self.env.get_reward
-            rew, _ = self.env.get_reward(next_ob)
+
+            # print("next_ob_shape", next_ob.shape)
+            # print("ob_shape", ob.shape)
+            # print("ac_shape", ac.shape)
+            # print("ac_shape", ac,shape)
+            rew, _ = self.env.get_reward(ob, ac)
 
             obs.append(ob[0])
             acs.append(ac[0])
