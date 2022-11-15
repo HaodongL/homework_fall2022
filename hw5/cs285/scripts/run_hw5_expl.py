@@ -66,6 +66,8 @@ def main():
     parser.add_argument('--rnd_n_layers', type=int, default=2)
     parser.add_argument('--rnd_size', type=int, default=400)
 
+    parser.add_argument('--huber_delta', type=float, default=float("inf"))
+
     parser.add_argument('--seed', type=int, default=2)
     parser.add_argument('--no_gpu', '-ngpu', action='store_true')
     parser.add_argument('--which_gpu', '-gpu_id', default=0)

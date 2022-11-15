@@ -4,54 +4,19 @@ import torch.optim as optim
 from torch import nn
 import torch
 
-# def init_method_1(model):
-#     for i in range(len(model)):
-#         if i % 2 == 0:
-#             model[i].weight.data.uniform_()
-#             model[i].bias.data.uniform_()
 
 
-
-# def init_method_2(model):
-#     for i in range(len(model)):
-#         if i % 2 == 0:
-#             model[i].weight.data.normal_()
-#             model[i].bias.data.normal_()
-    # model[0].weight.data.normal_()
-    # model[0].bias.data.normal_()
-
-def init_method_1(model):
-    model[0].weight.data.uniform_()
-    model[0].bias.data.uniform_()
-
-def init_method_2(model):
-    model[0].weight.data.normal_()
-    model[0].bias.data.normal_()
-
-
-
-class RNDModel(nn.Module, BaseExplorationModel):
+class PCModel(nn.Module, BaseExplorationModel):
     def __init__(self, hparams, optimizer_spec, **kwargs):
         super().__init__(**kwargs)
         self.ob_dim = hparams['ob_dim']
         self.output_size = hparams['rnd_output_size']
         self.n_layers = hparams['rnd_n_layers']
         self.size = hparams['rnd_size']
-        self.huber_delta = hparams['huber_delta']
-
         self.optimizer_spec = optimizer_spec
 
-        # <DONE>: Create two neural networks:
-        # 1) f, the random function we are trying to learn
-        # 2) f_hat, the function we are using to learn f
         self.loss = nn.MSELoss()
         self.f_hat = ptu.build_mlp(
-            self.ob_dim,
-            self.output_size,
-            n_layers=self.n_layers,
-            size=self.size,
-        )
-        self.f = ptu.build_mlp(
             self.ob_dim,
             self.output_size,
             n_layers=self.n_layers,
@@ -68,12 +33,7 @@ class RNDModel(nn.Module, BaseExplorationModel):
         )
 
         self.f_hat.to(ptu.device)
-        self.f.to(ptu.device)
 
-        # print(self.f_hat)
-
-        init_method_2(self.f_hat)
-        init_method_1(self.f)
 
 
     def forward(self, ob_no):
@@ -81,12 +41,7 @@ class RNDModel(nn.Module, BaseExplorationModel):
         # HINT: Remember to detach the output of self.f!
         y_hat = self.f_hat(ob_no)
         y = self.f(ob_no).detach()
-        
-        if self.huber_delta != float("inf"):
-            f_huber = nn.HuberLoss(reduction='none', delta=self.huber_delta)
-            pred_error = f_huber(y_hat, y).sum(1)
-        else:
-            pred_error = torch.sqrt((y_hat - y)**2).sum(1)
+        pred_error = torch.sqrt((y_hat - y)**2).sum(1)
 
         # print('ob_no: ', ob_no.shape)
         # print('y_hat: ', y_hat.shape)
