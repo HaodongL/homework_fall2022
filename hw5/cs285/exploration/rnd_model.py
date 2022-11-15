@@ -21,8 +21,8 @@ import torch
     # model[0].bias.data.normal_()
 
 def init_method_1(model):
-    model[0].weight.data.uniform_()
-    model[0].bias.data.uniform_()
+    model[0].weight.data.uniform_(-1.73, 1.73)
+    model[0].bias.data.uniform_(-1.73, 1.73)
 
 def init_method_2(model):
     model[0].weight.data.normal_()
@@ -86,7 +86,7 @@ class RNDModel(nn.Module, BaseExplorationModel):
             f_huber = nn.HuberLoss(reduction='none', delta=self.huber_delta)
             pred_error = f_huber(y_hat, y).sum(1)
         else:
-            pred_error = torch.sqrt((y_hat - y)**2).sum(1)
+            pred_error = torch.sqrt(((y_hat - y)**2).sum(1))
 
         # print('ob_no: ', ob_no.shape)
         # print('y_hat: ', y_hat.shape)
