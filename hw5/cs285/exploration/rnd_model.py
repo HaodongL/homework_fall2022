@@ -4,29 +4,14 @@ import torch.optim as optim
 from torch import nn
 import torch
 
-# def init_method_1(model):
-#     for i in range(len(model)):
-#         if i % 2 == 0:
-#             model[i].weight.data.uniform_()
-#             model[i].bias.data.uniform_()
-
-
-
-# def init_method_2(model):
-#     for i in range(len(model)):
-#         if i % 2 == 0:
-#             model[i].weight.data.normal_()
-#             model[i].bias.data.normal_()
-    # model[0].weight.data.normal_()
-    # model[0].bias.data.normal_()
 
 def init_method_1(model):
-    model[0].weight.data.uniform_(-1.73, 1.73)
-    model[0].bias.data.uniform_(-1.73, 1.73)
+    model.weight.data.uniform_(-1.73, 1.73)
+    model.bias.data.uniform_(-1.73, 1.73)
 
 def init_method_2(model):
-    model[0].weight.data.normal_()
-    model[0].bias.data.normal_()
+    model.weight.data.normal_()
+    model.bias.data.normal_()
 
 
 
@@ -50,12 +35,14 @@ class RNDModel(nn.Module, BaseExplorationModel):
             self.output_size,
             n_layers=self.n_layers,
             size=self.size,
+            init_method = init_method_1
         )
         self.f = ptu.build_mlp(
             self.ob_dim,
             self.output_size,
             n_layers=self.n_layers,
             size=self.size,
+            init_method = init_method_2
         )
         
         self.optimizer = self.optimizer_spec.constructor(
@@ -70,11 +57,6 @@ class RNDModel(nn.Module, BaseExplorationModel):
         self.f_hat.to(ptu.device)
         self.f.to(ptu.device)
 
-        # print(self.f_hat)
-
-        init_method_2(self.f_hat)
-        init_method_1(self.f)
-
 
     def forward(self, ob_no):
         # <DONE>: Get the prediction error for ob_no
@@ -87,6 +69,7 @@ class RNDModel(nn.Module, BaseExplorationModel):
             pred_error = f_huber(y_hat, y).sum(1)
         else:
             pred_error = torch.sqrt(((y_hat - y)**2).sum(1))
+            # pred_error = ((y_hat - y)**2).mean(1)
 
         # print('ob_no: ', ob_no.shape)
         # print('y_hat: ', y_hat.shape)
