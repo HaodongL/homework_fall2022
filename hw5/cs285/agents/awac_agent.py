@@ -50,10 +50,11 @@ class AWACAgent(DQNAgent):
 
     def get_qvals(self, critic, obs, action):
         # get q-value for a given critic, obs, and action
-        action = ptu.from_numpy(action)
-        qa_value = critic.qa_values(obs)
+        action = ptu.from_numpy(action).type(torch.int64)
+        obs = ptu.from_numpy(obs)
+        qa_value = critic.q_net(obs)
         q_value = torch.gather(qa_value, 1, action.unsqueeze(1)).squeeze(1)
-        return q_value
+        return ptu.to_numpy(q_value)
 
     def estimate_advantage(self, ob_no, ac_na, re_n, next_ob_no, terminal_n, n_actions=10):
         # TODO: Calculate and return the advantage (n sample estimate) 
@@ -63,6 +64,7 @@ class AWACAgent(DQNAgent):
 
         # HINT: store computed values in the provided vals list. You will use the average of this list for calculating the advantage.
         vals = []
+
         # TODO: get action distribution for current obs, you will use this for the value function estimate
         dist = self.eval_policy(ptu.from_numpy(ob_no))
         
@@ -70,7 +72,10 @@ class AWACAgent(DQNAgent):
         # HINT: You may find it helpful to utilze get_qvals defined above
         if self.agent_params['discrete']:
             for i in range(self.agent_params['ac_dim']):
-                ac_batch = [i] * n_batch
+                ac_batch = np.array([i] * n_batch)
+                # print("ac shape: ", ac_na.shape)
+                # print("ac_batch shape: ", ac_batch.shape)
+                # print("ac shape: ", ac_na,shape)
                 q_value = self.get_qvals(self.exploitation_critic, ob_no, ac_batch)
                 vals.append(q_value)
         else:
@@ -78,12 +83,13 @@ class AWACAgent(DQNAgent):
             for _ in range(n_actions):
                 pass
 
-        vals = vals.reshape((n_batch, ac_dim))
+        vals = np.array(vals).reshape((n_batch, ac_dim))
         p_a = []
         # n_sample = 100000
         # ac_sample = ptu.to_numpy(dist.sample(torch.Size((n_sample,)))).tolist()
         for i in range(ac_dim):
-            p_ai = torch.exp(dist.log_prob(ptu.from_numpy([i])))
+            ai = ptu.from_numpy(np.array([i]))
+            p_ai = torch.exp(dist.log_prob(ai))
             p_ai = ptu.to_numpy(p_ai)[0]
             p_a.append(p_ai)
             # p_a.append(ac_sample.count(i)/n_sample)
@@ -163,10 +169,10 @@ class AWACAgent(DQNAgent):
             # Logging #
             log['Exploration Critic Loss'] = exploration_critic_loss['Training Loss']
             log['Exploitation Critic Loss'] = exploitation_critic_loss['Training Loss']
-            log['Exploration Model Loss'] = expl_model_loss
+            log['Exploration Model Loss'] = expl_model_loss['Training Loss']
 
             # Uncomment these lines after completing awac
-            # log['Actor Loss'] = actor_loss
+            log['Actor Loss'] = actor_loss
 
             self.num_param_updates += 1
 
