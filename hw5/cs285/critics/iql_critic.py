@@ -61,8 +61,13 @@ class IQLCritic(BaseCritic):
         """
         Implement expectile loss on the difference between q and v
         """
-        e_input = self.iql_expectile - (diff <= 0).type(torch.int64)
-        e_loss = torch.mean(torch.abs(e_input))
+        e_input = self.iql_expectile - (diff < 0).type(torch.int64)
+        e_loss = torch.mean(torch.abs(e_input)*(diff ** 2))
+
+        # print("diff ", diff.shape)
+        # print("e_input ", e_input.shape)
+        # print("e_loss ", e_loss)
+        # print("diff ", diff,shape)
         return e_loss
 
     def update_v(self, ob_no, ac_na):
@@ -74,10 +79,17 @@ class IQLCritic(BaseCritic):
         
 
         ### YOUR CODE HERE ###
-        qa_vals = self.q_net(ob_no)
+        qa_vals = self.q_net_target(ob_no)
         q_vals = torch.gather(qa_vals, 1, ac_na.unsqueeze(1)).squeeze(1)
-        v_vals = self.v_net(ob_no)
+        v_vals = self.v_net(ob_no).squeeze(1)
         diff = q_vals - v_vals
+
+
+        # print("diff ", diff.shape)
+        # print("q_vals ", q_vals.shape)
+        # print("qa_vals ", qa_vals.shape)
+        # print("v_vals ", v_vals.shape)
+        # print("diff ", diff,shape)
         value_loss = self.expectile_loss(diff)
         
         assert value_loss.shape == ()
@@ -101,7 +113,7 @@ class IQLCritic(BaseCritic):
         terminal_n = ptu.from_numpy(terminal_n)
         
         ### YOUR CODE HERE ###
-        v_vals = self.v_net(next_ob_no)
+        v_vals = self.v_net(next_ob_no).squeeze(1)
         target = reward_n + self.gamma * v_vals
         qa_vals = self.q_net(ob_no)
         q_vals = torch.gather(qa_vals, 1, ac_na.unsqueeze(1)).squeeze(1)

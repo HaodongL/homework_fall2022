@@ -54,7 +54,7 @@ class IQLAgent(DQNAgent):
             q_value = critic.v_net(obs)
         else:
             qa_values = critic.q_net_target(obs)
-            q_value = torch.gather(qa_values, 1, action.type(torch.int64).unsqueeze(1))
+            q_value = torch.gather(qa_values, 1, action.type(torch.int64).unsqueeze(1)).squeeze(1)
         return q_value
 
     def estimate_advantage(self, ob_no, ac_na, re_n, next_ob_no, terminal_n, n_actions=10):
